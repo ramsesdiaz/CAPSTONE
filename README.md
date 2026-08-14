@@ -37,7 +37,12 @@ The system yields a predicted intent label matching one of four primary navigati
 ---
 
 ## 3. Data Acquisition
-The dataset combines time-series data captured across 8 electrode arrays positioned across the scalp based on the 10-20 map. To robustly capture distinct types of neurophysiological indicators, data was acquired from multiple states:
+The dataset combines time-series data captured across 8 electrode arrays positioned across the scalp based on the 10-20 map. The 2 datasets used in this study:
+
+    - **Dataset 1**: This first dataset contains 1 minute of trial recordings per movement to setup the code. The first 10 seconds of recording were ignored to account for HW setup, then recordings were divided into 5 second epochs, where the first 2 seconds are intentional movements (Real and/or Imagined) and the remaining 3 seconds are at rest. Intentional movements were collected at seconds 10, 15, 20, 25, 30, 35, 40, 45, 50 & 55 for a total of **10 recordings** per movement.
+    - **Dataset 2**: Once the code was setup. I collected a much larger dataset consisting of 3 minutes of recordings per movement (Up, Down, Right, Left, Clench & Eye Blink) and per signal (Real and Imagined). Similar to dataset 1, the first and last 10 seconds of recording were ignored to account for HW setup, then the rest of the recordings were divided into 5 second epochs, where the first 2 seconds are intentional movements (Real and/or Imagined) and the remaining 3 seconds are at rest, for a total of **32 intentional recordings** per movements and per signal. The txt files from these recordings were huge and in order to enable upload into Github I had to post process the files, concatenate them and extract them into a csv file, which I later had to further compress. This final dataset is the one I'm using build, train and test the ML models.
+
+To robustly capture distinct types of neurophysiological indicators, data was acquired from multiple states:
 
 1) **Mental Imagery**: Dedicated sessions where the subject imagined localized motor actions without physical execution to generate pure Up, Down, Left, and Right control arrays.
 2) **Artifact Control**: Intentional collections of mechanical ocular triggers (*Eye_Blink*) and myogenic anomalies (*Jaw Clench*) to act as non-imagery hardware system keys.
@@ -64,8 +69,16 @@ Target text strings (*Up, Down, etc..*) were transformed into numeric classifica
 Three distinct architectures were implemented and evaluated in attempt to solve the navigational problem statement:
 
 - **Pipeline A (Optimized Euclidean Flat-Space Framework)**: This approach mapped the signal windows into standard vector spaces by manually extracting 219 distinct statistical time-domain and frequency-domain metrics (including RMS, Variance, and specific Alpha/Theta band powers) across individual channels.
-
+    - **Artifact Rejection**: Peak-to-Peak amplitude thresholding to drop corrupted hardware epochs across 2.0 second sliding windows.
+    - **Feature Extraction**: Manual statistical extraction of 219 distinct flat features across time-domain and frequency-domain metrics mapped per individual channel.
+    - **Hyperparameter Optimization**: Automated Grid Search cross-validation across 56 unique candidate parameter pairs (totaling 280 fits) to isolate peak boundary conditions.
+    - **Classification**: Optimized Support Vector Machine with a Radial Basis Function kernel (C=5, γ=’scale’) to maximize non-linear class separation.
+      
 - **Pipeline B (Riemannian Geometric-Manifold Framework)**: This approach bypassed traditional flat statistics entirely. Instead, it estimated robust covariance matrices directly from the raw EEG streams to capture non-linear spatial correlations, global network phase shapes and synchronized timing variations across the electrode array before projecting them onto a flat geometric plane using Tangent Space mapping.
+    - **Artifact Rejection**: Identical Peak-to-Peak amplitude thresholding across 2.0 second windows to maintain validation parity.
+    - **Feature Extraction**: Estimation of robust Covariance Matrices directly from raw EEG data streams to isolate spatial correlations and synchronization boundaries across the electrode array.
+    - **Manifold Projection**: Vectorization via Tangent Space mapping to project curved, non-linear Riemannian distances onto a flat geometric plane without warping structural information.
+    - **Classification**: Baseline Random Forest Classifier (n_estimators=200) trained directly on manifold tangent vectors.
 
 - **Pipeline C (Deep Neural Networks Framework)**: This approach eliminated both manual feature engineering and geometric matrix projections. Instead, it utilized a convolutional neural network to process overlapping signal windows and normalized raw waveforms, allowing the model to automatically learn and extract complex spatial-temporal patterns directly from the brainwave data. Moreover, this pipeline used ELU (Exponential Linear Unit) activation function for its intermediate convolutional and depthwise-separable layers, paired with a Softmax activation function at the final dense output layer to compute class probabilities across the navigation commands.
 
@@ -89,7 +102,18 @@ An extensive hyperparameter grid search (*evaluating 56 unique parameter candida
 
 ### Findings
 
+This summary outlines the performance comparison across all three BCI pipelines: Euclidean Feature Engineering (Pipeline A), Riemannian Geometric Geometry (Pipeline B), and Deep Neural Networks (Pipeline C) for a Brain-Computer Interface (BCI).
+
+**Executive Summary**
+The three-way evaluation revealed distinct trade-offs between manual feature engineering, geometric manifold mapping and deep learning. While Pipeline B leveraged the raw geometric structure of covariance matrices in Tangent Space, Pipeline C (EEGNet 2D-CNN) learned spatial-frequency representations directly from scaled signal windows without manual feature extraction. However, Pipeline A's combination of domain-specific spatial-spectral features and non-linear kernel optimization ultimately outperformed both approaches, securing top classification performance for this dataset configuration.
+
 - **The Winner!**: The Optimized **Pipeline A Euclidean SVM** drastically outperformed Riemannian and the Deep Neural Network alternatives, securing an **89.37%** mean accuracy. The non-linear boundaries established by the optimized RBF kernel proved highly capable of separating complex variations across the 219 flat features, reducing intra-class overlap.
+
+<p align="center">
+  <img src="./images/Pipeline_A_Optimized_Euclidean_BCI_Control_Plot.png" alt="Pipeline A BCI Control Plot" width="850"/>
+  <br>
+  <sub><b>Figure 1:</b> Pipeline A (Euclidean / SVM_RBF) Performance Metrics</sub>
+</p>
 
 - **Riemannian**: While Pipeline B RandomForest achieved a lower overall accuracy of **77.73%**, it demonstrated incredible structural safety. It produced a agreat **93.0% F1-score** for **Down** command and **0.0% false-positive leakage** from mental imagery into the mechanical hardware triggers (Clench and Eye_Blink). This confirms that the geometric tangent space provides excellent isolation for high-impact control commands.
 
@@ -103,7 +127,8 @@ An extensive hyperparameter grid search (*evaluating 56 unique parameter candida
 ---
 
 ## 7. Next Step & Suggestions
-The next step would be to deploy Pipeline A model into a live, **real-time** stream control session!
+- I feel Deep Neural Networks have the potential to perform much better, however, the EEG raw data used in this analysis came from my home setup where I was the only subject, therefore, I would strongly consider collecting the exact same data but now across different subjects and feed this back into all these 3 pipelines and re-assess performance.
+- Once the step above is complete, choose the best pipeline model for a live, **real-time** stream control session deployment!
 
 ---
 
