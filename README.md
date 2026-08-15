@@ -32,7 +32,7 @@ Successfully decoding motor imagery (*imagined movement*) enables hands-free env
 This system is designed as a **supervised machine learning classification** challenge. The models takes in segmented windows of multi-channel neurophysiological time-series data and map them into discrete, categorical target outcomes.
 
 ### Expected Output
-The system yields a predicted intent label matching one of four primary navigational directives (*Up, Down, Left, Right*). Additionally, it supports downstream multi-class sorting to isolate secondary control triggers (Clench and Eye_Blink) from the active mental imagery streams to be used as One Click and Double Click respectively.
+The system yields a predicted intent label matching one of four primary navigational directives (**Up, Down, Left, Right**). Additionally, it supports downstream multi-class sorting to isolate secondary control triggers (Clench and Eye_Blink) from the active mental imagery streams to be used as **One Click** and **Double Click** respectively.
 
 ---
 
