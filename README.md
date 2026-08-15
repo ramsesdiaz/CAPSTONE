@@ -112,7 +112,7 @@ This summary outlines the performance comparison across all three BCI pipelines:
 - **The Winner!**: The Optimized **Pipeline A Euclidean SVM** drastically outperformed Riemannian and the Deep Neural Network alternatives, securing an **89.37%** mean accuracy. The non-linear boundaries established by the optimized RBF kernel proved highly capable of separating complex variations across the 219 flat features, reducing intra-class overlap.
 
 <p align="center">
-  <img src="./images/Pipeline_A_Optimized_Euclidean_BCI_Control_Plot.png" alt="Pipeline A BCI Control Plot" width="850"/>
+  <img src="./images/Pipeline_A_Optimized_Euclidean_BCI_Control_Plot.png" alt="Pipeline A BCI Control Plot" width="70%"/>
   <br>
   <sub><b>Figure 1:</b> Pipeline A (Euclidean / SVM_RBF) Performance Metrics</sub>
 </p>
